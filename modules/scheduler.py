@@ -19,54 +19,32 @@ def optimize_trajectory(
     drop_positions: dict[int, tuple[float, float]] | None = None,
     fragile_group_id: int = 4,
 ) -> list[dict[str, Any]]:
-    """Return a deterministic pick order.
-
-    Group 4 is selected first when present. After each pick, the virtual robot
-    position becomes the drop position for that target's group, matching the SRS.
-    """
+    """Return a deterministic pick order following the SRS scheduling rules."""
     remaining = [dict(target) for target in targets]
     drops = drop_positions or DEFAULT_DROP_POSITIONS_MM
     ordered: list[dict[str, Any]] = []
     current = start_position
 
-    if any(int(item["group_id"]) == fragile_group_id for item in remaining):
-        fragile = [item for item in remaining if int(item["group_id"]) == fragile_group_id]
-        remaining = [item for item in remaining if int(item["group_id"]) != fragile_group_id]
-        for item in _nearest_neighbor(fragile, current):
-            ordered.append(item)
-            current = drops.get(int(item["group_id"]), current)
-
-    while remaining:
-        item = min(
-            remaining,
+    def pick_nearest(candidates: list[dict[str, Any]]) -> dict[str, Any]:
+        return min(
+            candidates,
             key=lambda target: hypot(
                 float(target["x"]) - current[0],
                 float(target["y"]) - current[1],
             ),
         )
+
+    while remaining:
+        fragile = [
+            item for item in remaining
+            if int(item["group_id"]) == fragile_group_id
+        ]
+        candidates = fragile if fragile else remaining
+        item = pick_nearest(candidates)
         remaining.remove(item)
         ordered.append(item)
+
+        # The SRS defines the robot's next position as the destination bin.
         current = drops.get(int(item["group_id"]), current)
 
     return ordered
-
-
-def _nearest_neighbor(
-    targets: list[dict[str, Any]],
-    start: tuple[float, float],
-) -> list[dict[str, Any]]:
-    current = start
-    remaining = targets[:]
-    result: list[dict[str, Any]] = []
-    while remaining:
-        item = min(
-            remaining,
-            key=lambda target: hypot(
-                float(target["x"]) - current[0],
-                float(target["y"]) - current[1],
-            ),
-        )
-        remaining.remove(item)
-        result.append(item)
-        current = (float(item["x"]), float(item["y"]))
-    return result
