@@ -1,0 +1,18 @@
+{
+  "can": 1,
+  "tin_can": 1,
+  "aluminum_foil": 1,
+  "metal_cap": 1,
+  "cardboard": 2,
+  "paper_cup": 2,
+  "tetra_pak": 2,
+  "paper_box": 2,
+  "newspaper": 2,
+  "pet_bottle": 3,
+  "plastic_cup": 3,
+  "detergent_bottle": 3,
+  "nylon_bag": 3,
+  "glass_bottle": 4,
+  "glass_jar": 4,
+  "broken_glass": 4
+}
