@@ -1,0 +1,27 @@
+camera:
+  source: 0
+  width: 1920
+  height: 1080
+  fps: 15
+
+inference:
+  model_path: models/yolov8n_waste_int8.tflite
+  input_width: 320
+  input_height: 320
+  confidence_threshold: 0.50
+  nms_iou_threshold: 0.45
+
+uart:
+  port: /dev/ttyAMA0
+  baudrate: 115200
+  timeout: 1.0
+  ack_timeout: 2.0
+  action_timeout: 15.0
+  max_retries: 3
+
+scheduler:
+  fragile_group_id: 4
+  start_position_mm: [0.0, 0.0]
+
+runtime:
+  loop_delay_seconds: 0.1
