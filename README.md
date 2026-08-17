@@ -75,8 +75,6 @@ Hệ thống xử lý hình ảnh và điều phối phân loại rác tự đ�
 | Baudrate | `115200 bps` |
 | AI Runtime | `tflite-runtime` hoặc `onnxruntime` trên ARM Cortex-A72 |
 
-Các yêu cầu phần cứng và runtime này được định nghĩa trong đặc tả kỹ thuật. fileciteturn0file0L13-L23
-
 ## AI Detection
 
 ### Model
@@ -87,8 +85,6 @@ Các yêu cầu phần cứng và runtime này được định nghĩa trong đ�
 - Confidence threshold: `≥ 0.50`.
 - NMS IoU threshold: `≤ 0.45`.
 
-fileciteturn0file0L66-L76
-
 ### Phân loại 4 nhóm
 
 | Group ID | Nhóm | Màu thùng | Model classes |
@@ -97,8 +93,6 @@ Các yêu cầu phần cứng và runtime này được định nghĩa trong đ�
 | 2 | **TÁI CHẾ KHÁC** | Vàng | `cardboard`, `paper_cup`, `tetra_pak`, `paper_box`, `newspaper` |
 | 3 | **RÁC THẢI NHỰA** | Xanh lá | `pet_bottle`, `plastic_cup`, `detergent_bottle`, `nylon_bag` |
 | 4 | **THỦY TINH / TÁI CHẾ RIÊNG** | Xanh dương | `glass_bottle`, `glass_jar`, `broken_glass` |
-
-Mapping chi tiết được định nghĩa trong SRS. fileciteturn0file0L79-L179
 
 ## Pixel → World Coordinates
 
@@ -122,8 +116,6 @@ u_center = x_min + width / 2
 v_center = y_min + height / 2
 ```
 
-fileciteturn0file0L181-L193
-
 ## Sorting & Scheduling
 
 Khi có nhiều vật thể cùng lúc, scheduler sử dụng **Nearest Neighbor** kết hợp **Batching**.
@@ -136,8 +128,6 @@ Quy trình:
 4. Chọn vật có khoảng cách nhỏ nhất.
 5. Cập nhật vị trí hiện tại thành vị trí thùng chứa sau khi robot thả vật.
 6. Lặp cho tới khi toàn bộ target được xử lý.
-
-fileciteturn0file0L196-L214
 
 ## UART Protocol
 
@@ -173,8 +163,6 @@ Ví dụ:
 $PICK,1,150.2,320.0,0.0*4C\n
 ```
 
-fileciteturn0file0L217-L261
-
 ### Response frame
 
 MCU phản hồi:
@@ -190,8 +178,6 @@ MCU phản hồi:
 - `!ERR,CODE`: lỗi phần cứng hoặc lỗi thực thi.
 
 Pi gửi lệnh tiếp theo chỉ sau khi nhận `!DONE`; nếu nhận lỗi hoặc timeout thì dừng xử lý target hiện tại.
-
-fileciteturn0file0L263-L292
 
 ## Cấu trúc mã nguồn đề xuất
 
@@ -214,7 +200,7 @@ auto-sort-pi/
 └── requirements.txt
 ```
 
-Đây là cấu trúc được đề xuất trong SRS và có thể được dùng làm baseline cho implementation. fileciteturn0file0L294-L336
+Đây là cấu trúc được đề xuất trong SRS và có thể được dùng làm baseline cho implementation.
 
 ## Core flow
 
@@ -244,7 +230,7 @@ for target in scheduled_targets:
     )
 ```
 
-Luồng xử lý này tương ứng với state flow được mô tả trong đặc tả: detect → mapping → transform → schedule → UART command. fileciteturn0file0L480-L618
+Luồng xử lý: detect → mapping → transform → schedule → UART command.
 
 ## Calibration
 
@@ -275,8 +261,6 @@ UART command cần bảo đảm:
 - Timeout cho một hành trình gắp.
 - Retry tối đa **3 lần** khi mất gói hoặc checksum sai theo tiêu chí nghiệm thu.
 
-fileciteturn0file0L642-L654
-
 ## Performance Targets
 
 | Hạng mục | Tiêu chí nghiệm thu |
@@ -285,8 +269,6 @@ UART command cần bảo đảm:
 | Inference throughput | `≥ 10 FPS` |
 | Position accuracy | Sai số `≤ ±3.0 mm` |
 | UART resilience | Retry tối đa `3` lần khi mất gói / checksum lỗi |
-
-fileciteturn0file0L642-L654
 
 ## Development Notes
 
@@ -299,4 +281,3 @@ README này mô tả kiến trúc và yêu cầu kỹ thuật của hệ thống
 - Class mapping tương ứng với model được huấn luyện.
 - Vị trí các thùng chứa trong hệ tọa độ world.
 - Timeout / retry policy của MCU.
-
