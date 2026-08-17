@@ -1,0 +1,9 @@
+{
+  "homography_matrix": [
+    [1.0, 0.0, 0.0],
+    [0.0, 1.0, 0.0],
+    [0.0, 0.0, 1.0]
+  ],
+  "source_points": [],
+  "destination_points_mm": []
+}
