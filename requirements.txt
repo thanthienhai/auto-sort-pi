@@ -2,4 +2,8 @@ numpy
 opencv-python-headless
 pyserial
 PyYAML
+structlog
 tflite-runtime
+
+# Dev / test only (không cần trên Raspberry Pi vận hành):
+#   pytest

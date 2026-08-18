@@ -216,3 +216,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# auto-sort-pi: model binaries, dev artifacts & test samples (không commit)
+*.tflite
+*.pt
+*.onnx
+*_saved_model/
+models/*.tflite
+samples/
+logs/

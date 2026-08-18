@@ -85,6 +85,18 @@ Hệ thống xử lý hình ảnh và điều phối phân loại rác tự đ�
 - Confidence threshold: `≥ 0.50`.
 - NMS IoU threshold: `≤ 0.45`.
 
+`modules/detector.py` tự nhận diện và hỗ trợ hai layout output:
+
+- **YOLOv8/v11 raw** `[1, 4+num_classes, num_anchors]` (export Ultralytics mặc định,
+  `nms=False`) — decode `(cx,cy,w,h)` + argmax lớp, đổi `xywh → xyxy`, rồi NMS
+  (per-class) ngay trên Pi.
+- **NMS-embedded** `[N, 6]` = `(x1,y1,x2,y2,score,class_id)` (export kèm
+  `TFLite_Detection_PostProcess`).
+
+Toạ độ raw được tự suy luận là normalized `[0,1]` hay theo pixel của input model.
+Số lớp lấy từ `config/model_classes.json`. Nếu model có layout khác, hàm decode
+báo lỗi rõ ràng thay vì trả về toạ độ sai.
+
 ### Phân loại 4 nhóm
 
 | Group ID | Nhóm | Màu thùng | Model classes |
@@ -160,8 +172,11 @@ Trong đó:
 Ví dụ:
 
 ```text
-$PICK,1,150.2,320.0,0.0*4C\n
+$PICK,1,150.2,320.0,0.0*09\n
 ```
+
+> Checksum `09` là XOR thực tế của payload `PICK,1,150.2,320.0,0.0` (từ sau `$` đến
+> trước `*`), khớp với `SerialCommunicator.calc_checksum`.
 
 ### Response frame
 
@@ -185,18 +200,21 @@ Pi gửi lệnh tiếp theo chỉ sau khi nhận `!DONE`; nếu nhận lỗi ho�
 auto-sort-pi/
 ├── config/
 │   ├── calibration_matrix.json   # Ma trận Homography H
-│   ├── class_mapping.json        # AI class → Group ID
+│   ├── class_mapping.json        # AI class name → Group ID
+│   ├── model_classes.json        # class_id (thứ tự) → class name
 │   └── settings.yaml             # Camera, UART, threshold
 ├── models/
 │   └── yolov8n_waste_int8.tflite # AI model
 ├── modules/
 │   ├── __init__.py
 │   ├── camera_stream.py           # Camera stream / FPS optimization
-│   ├── detector.py                # TFLite inference + NMS
-│   ├── transformer.py             # Pixel → World
+│   ├── detector.py                # TFLite inference + decode + NMS
+│   ├── transformer.py             # Pixel → World (numpy)
 │   ├── scheduler.py               # Sorting / trajectory scheduling
-│   └── serial_comm.py             # UART + handshake
-├── main.py                        # Main state machine
+│   ├── serial_comm.py             # UART + handshake
+│   └── logging_setup.py           # structlog: log per-cycle ra file JSON
+├── tests/                         # Unit tests (pytest, không cần phần cứng)
+├── main.py                        # Main state machine (FSM)
 └── requirements.txt
 ```
 
@@ -269,6 +287,30 @@ UART command cần bảo đảm:
 | Inference throughput | `≥ 10 FPS` |
 | Position accuracy | Sai số `≤ ±3.0 mm` |
 | UART resilience | Retry tối đa `3` lần khi mất gói / checksum lỗi |
+
+## Logging
+
+`modules/logging_setup.py` cấu hình structlog theo chuẩn dự án: mỗi *chu kỳ* xử lý
+(một vòng `capture → detect → transform → schedule → uart`) mang một `request_id`
+có tiền tố timestamp, được bind bằng contextvars ở đầu chu kỳ trong `main.py`. Mọi
+log của các module con tự đính kèm `request_id` và được ghi:
+
+- Ra file `logs/requests/<request_id>.log` (JSON lines) — mỗi chu kỳ một file.
+- Ra console để theo dõi khi vận hành.
+
+Tên event theo dạng `<domain>.<action>.<status>` (ví dụ `step.infer.done`,
+`step.uart.tx`, `step.pick.failed`, `cycle.success`).
+
+## Testing
+
+```bash
+pip install pytest
+pytest -q
+```
+
+Unit test trong `tests/` phủ scheduler, transformer, decode detector (numpy thuần)
+và handshake UART (serial giả) — **không cần** camera, MCU hay model `.tflite`, nên
+chạy được trên máy dev bất kỳ.
 
 ## Development Notes
 
