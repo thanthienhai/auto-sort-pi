@@ -6,13 +6,13 @@ import threading
 import time
 from typing import Optional
 
-import cv2
-
 
 class CameraStream:
     """Continuously capture frames and expose the newest frame to callers."""
 
     def __init__(self, src: int | str = 0, width: int = 1920, height: int = 1080) -> None:
+        import cv2  # lazy: chỉ cần OpenCV khi thực sự mở camera trên thiết bị.
+
         self.src = src
         self.width = width
         self.height = height
