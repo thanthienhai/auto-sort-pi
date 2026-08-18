@@ -225,3 +225,6 @@ __marimo__/
 models/*.tflite
 samples/
 logs/
+# onnx2tf / dev conversion output
+*_tf/
+*_tensor_correspondence_report.json
