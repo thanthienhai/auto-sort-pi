@@ -11,18 +11,28 @@ Hỗ trợ hai layout output phổ biến và tự nhận diện:
 
 Phần giải mã + NMS dùng numpy thuần nên unit-test được mà không cần OpenCV; OpenCV
 chỉ dùng cho tiền xử lý ảnh (resize / đổi màu) trong ``infer``.
+
+§5/§6 task.md: model không tương thích (input shape/dtype, output shape, số class)
+phải ``raise`` lỗi tường minh (``ModelLoadError``) ngay khi khởi tạo, không được
+"silently accept" rồi decode sai ở runtime. Lỗi loading / inference / decoding
+được phân biệt bằng ba exception riêng.
 """
 
 from __future__ import annotations
 
 import time
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 
+from .exceptions import ModelDecodingError, ModelInferenceError, ModelLoadError
 from .logging_setup import get_logger
 
 logger = get_logger("autosort.detector")
+
+# Các dtype input mà pipeline tiền xử lý (float [0,1] hoặc uint8 quantized) hỗ trợ.
+SUPPORTED_INPUT_DTYPES = (np.float32, np.uint8, np.int8)
 
 
 def _load_interpreter():
@@ -42,7 +52,7 @@ def _load_interpreter():
             return module.Interpreter
         except ImportError as exc:  # pragma: no cover - phụ thuộc môi trường
             errors.append(f"{module_path}: {exc}")
-    raise ImportError(
+    raise ModelLoadError(
         "Không tìm thấy TFLite runtime. Cài một trong: tflite-runtime (Pi), "
         "ai-edge-litert (dev), hoặc tensorflow.\n" + "\n".join(errors)
     )
@@ -58,15 +68,81 @@ class WasteDetector:
         nms_iou_threshold: float = 0.45,
         num_classes: int | None = None,
     ) -> None:
+        if not (0.0 <= confidence_threshold <= 1.0):
+            raise ModelLoadError(
+                f"confidence_threshold phải trong [0,1], nhận {confidence_threshold}"
+            )
+        if not (0.0 <= nms_iou_threshold <= 1.0):
+            raise ModelLoadError(
+                f"nms_iou_threshold phải trong [0,1], nhận {nms_iou_threshold}"
+            )
+        if not Path(model_path).is_file():
+            raise ModelLoadError(f"Model file không tồn tại: {model_path}")
+
+        self.model_path = model_path
         self.confidence_threshold = confidence_threshold
         self.nms_iou_threshold = nms_iou_threshold
         self.num_classes = num_classes
+
         Interpreter = _load_interpreter()
-        self.interpreter = Interpreter(model_path=model_path)
-        self.interpreter.allocate_tensors()
+        try:
+            self.interpreter = Interpreter(model_path=model_path)
+            self.interpreter.allocate_tensors()
+        except ModelLoadError:
+            raise
+        except Exception as exc:  # noqa: BLE001 - runtime lỗi khi parse file model
+            raise ModelLoadError(f"Không load được model '{model_path}': {exc}") from exc
+
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
+        self._validate_input_spec()
+        self._validate_output_spec()
+
         _, self.input_height, self.input_width, _ = self.input_details[0]["shape"]
+
+    # ------------------------------------------------------------ validation
+
+    def _validate_input_spec(self) -> None:
+        if not self.input_details:
+            raise ModelLoadError(f"Model '{self.model_path}' không có input tensor nào.")
+        detail = self.input_details[0]
+        shape = tuple(int(v) for v in detail["shape"])
+        if len(shape) != 4 or shape[0] != 1 or shape[3] != 3:
+            raise ModelLoadError(
+                f"Input shape không hợp lệ {shape}; kỳ vọng [1, H, W, 3] "
+                f"(model: '{self.model_path}')."
+            )
+        if detail["dtype"] not in SUPPORTED_INPUT_DTYPES:
+            raise ModelLoadError(
+                f"Input dtype không hỗ trợ: {detail['dtype']}; kỳ vọng một trong "
+                f"{[dt.__name__ for dt in SUPPORTED_INPUT_DTYPES]} "
+                f"(model: '{self.model_path}')."
+            )
+
+    def _validate_output_spec(self) -> None:
+        if not self.output_details:
+            raise ModelLoadError(f"Model '{self.model_path}' không có output tensor nào.")
+        for detail in self.output_details:
+            shape = tuple(int(v) for v in detail["shape"])
+            # Layout hợp lệ: [1, 4+num_classes, N] / [1, N, 6] / [N, 6] (batch tuỳ chọn).
+            dims = [d for d in shape if d not in (1,)] or list(shape)
+            if len(shape) not in (2, 3):
+                raise ModelLoadError(
+                    f"Output shape không hợp lệ {shape}; kỳ vọng rank 2 hoặc 3 "
+                    f"(model: '{self.model_path}')."
+                )
+            feature_candidates = {d for d in shape if d not in (1,)}
+            if self.num_classes is not None:
+                expected_feat = 4 + self.num_classes
+                if expected_feat not in shape and 6 not in shape:
+                    raise ModelLoadError(
+                        f"Output shape {shape} không khớp num_classes={self.num_classes} "
+                        f"(kỳ vọng feature dim = {expected_feat} hoặc 6 cho NMS-embedded); "
+                        f"model: '{self.model_path}'."
+                    )
+            del dims, feature_candidates  # chỉ dùng để early-fail rõ ràng ở trên
+
+    # ------------------------------------------------------------------ infer
 
     def infer(self, frame: np.ndarray) -> list[dict[str, Any]]:
         import cv2  # lazy: OpenCV chỉ cần cho tiền xử lý ảnh khi chạy thật.
@@ -85,16 +161,19 @@ class WasteDetector:
         else:
             tensor = tensor.astype(detail["dtype"])
 
-        self.interpreter.set_tensor(detail["index"], tensor)
-        self.interpreter.invoke()
-        outputs = []
-        for item in self.output_details:
-            raw = self.interpreter.get_tensor(item["index"])
-            quant = item.get("quantization", (0.0, 0))
-            scale, zero_point = quant[0], quant[1]
-            if raw.dtype in (np.uint8, np.int8) and scale:
-                raw = (raw.astype(np.float32) - zero_point) * scale
-            outputs.append(raw)
+        try:
+            self.interpreter.set_tensor(detail["index"], tensor)
+            self.interpreter.invoke()
+            outputs = []
+            for item in self.output_details:
+                raw = self.interpreter.get_tensor(item["index"])
+                quant = item.get("quantization", (0.0, 0))
+                scale, zero_point = quant[0], quant[1]
+                if raw.dtype in (np.uint8, np.int8) and scale:
+                    raw = (raw.astype(np.float32) - zero_point) * scale
+                outputs.append(raw)
+        except Exception as exc:  # noqa: BLE001 - lỗi runtime khi invoke interpreter
+            raise ModelInferenceError(f"Lỗi khi chạy inference: {exc}") from exc
 
         detections = self._decode_outputs(outputs, original_w, original_h)
         latency_ms = (time.perf_counter() - started) * 1000.0
@@ -116,20 +195,25 @@ class WasteDetector:
         if not outputs:
             return []
 
-        raw = np.asarray(outputs[0], dtype=np.float32)
-        # Chỉ bỏ trục batch dẫn đầu, KHÔNG dùng squeeze (sẽ xoá nhầm trục anchor=1).
-        if raw.ndim == 3 and raw.shape[0] == 1:
-            raw = raw[0]
-        if raw.ndim != 2:
-            raise ValueError(
-                f"Unsupported detector output shape {tuple(np.asarray(outputs[0]).shape)}; "
-                "expected [N, 6] or [4+num_classes, N] (with optional leading batch axis)."
-            )
+        try:
+            raw = np.asarray(outputs[0], dtype=np.float32)
+            # Chỉ bỏ trục batch dẫn đầu, KHÔNG dùng squeeze (sẽ xoá nhầm trục anchor=1).
+            if raw.ndim == 3 and raw.shape[0] == 1:
+                raw = raw[0]
+            if raw.ndim != 2:
+                raise ModelDecodingError(
+                    f"Unsupported detector output shape {tuple(np.asarray(outputs[0]).shape)}; "
+                    "expected [N, 6] or [4+num_classes, N] (with optional leading batch axis)."
+                )
 
-        raw, mode = self._orient(raw)
-        if mode == "nms":
-            return self._decode_nms_embedded(raw, image_w, image_h)
-        return self._decode_yolo(raw, image_w, image_h)
+            raw, mode = self._orient(raw)
+            if mode == "nms":
+                return self._decode_nms_embedded(raw, image_w, image_h)
+            return self._decode_yolo(raw, image_w, image_h)
+        except ModelDecodingError:
+            raise
+        except Exception as exc:  # noqa: BLE001 - bất kỳ lỗi decode bất ngờ nào khác
+            raise ModelDecodingError(f"Lỗi khi decode output model: {exc}") from exc
 
     def _orient(self, raw: np.ndarray) -> tuple[np.ndarray, str]:
         """Đưa mảng về dạng ``[num_predictions, feature]`` và xác định layout."""

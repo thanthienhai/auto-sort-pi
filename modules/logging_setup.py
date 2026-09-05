@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 from pathlib import Path
 from typing import Any
 
@@ -108,6 +109,27 @@ def configure_logging(level: int = logging.INFO) -> None:
     root_logger.setLevel(level)
 
     _CONFIGURED = True
+
+
+def prune_old_request_logs(retention_days: float, log_dir: Path = REQUEST_LOG_DIR) -> int:
+    """Xoá các file ``logs/requests/*.log`` cũ hơn ``retention_days`` (§19 task.md).
+
+    Mỗi chu kỳ ghi một file riêng (không phải một file lớn append liên tục),
+    nên "rotation" ở đây là dọn theo tuổi file thay vì theo kích thước. Trả về
+    số file đã xoá; an toàn khi gọi nhiều lần / thư mục chưa tồn tại.
+    """
+    if not log_dir.is_dir() or retention_days <= 0:
+        return 0
+    cutoff = time.time() - retention_days * 86400
+    removed = 0
+    for path in log_dir.glob("*.log"):
+        try:
+            if path.stat().st_mtime < cutoff:
+                path.unlink()
+                removed += 1
+        except OSError:
+            continue
+    return removed
 
 
 def get_logger(name: str = "autosort") -> Any:

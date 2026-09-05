@@ -7,3 +7,10 @@ tflite-runtime
 
 # Dev / test only (không cần trên Raspberry Pi vận hành):
 #   pytest
+#
+# tools/calibrate.py và tools/test_calibration.py (chế độ interactive, click
+# chuột) cần cv2.imshow/namedWindow — KHÔNG có trong opencv-python-headless.
+# Trên máy có màn hình dùng để chạy 2 tool này, cài thêm (không cài trên Pi
+# headless vận hành thật, và không cài chung với opencv-python-headless):
+#   pip install opencv-python
+# Chế độ --points-file (non-interactive, dùng trong test) không cần GUI này.

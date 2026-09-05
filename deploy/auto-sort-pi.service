@@ -1,0 +1,39 @@
+[Unit]
+Description=Auto Sort Pi - vision + robot control pipeline
+# Cần cả network (NTP time sync ảnh hưởng timestamp log) và udev (camera/UART
+# device node phải sẵn sàng) trước khi start.
+After=network.target local-fs.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+# Chỉnh lại cho đúng nơi mã nguồn thực sự được deploy trên Pi.
+WorkingDirectory=/opt/auto-sort-pi
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=-/opt/auto-sort-pi/deploy/auto-sort-pi.env
+ExecStart=/opt/auto-sort-pi/.venv/bin/python /opt/auto-sort-pi/main.py
+
+# Graceful shutdown: main.py bắt SIGTERM và tự đóng camera/UART trước khi
+# thoát (xem main._handle_sigterm) — cho thời gian đủ để chu kỳ hiện tại
+# (tối đa ~action_timeout giây, mặc định 15s) kết thúc trước khi bị SIGKILL.
+TimeoutStopSec=20
+KillSignal=SIGTERM
+
+# Auto start khi boot + restart khi crash, nhưng không cố mãi nếu lỗi lặp lại
+# liên tục (cấu hình sai / phần cứng hỏng) — tránh restart-loop vô tận.
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+# Quyền truy cập /dev/ttyAMA0, /dev/ttyUSB0 và camera thường cần group dialout/video.
+SupplementaryGroups=dialout video
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=auto-sort-pi
+
+[Install]
+WantedBy=multi-user.target

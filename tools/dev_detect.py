@@ -149,7 +149,7 @@ def main() -> None:
         )
 
     labels = load_labels(args.labels)
-    transformer = CoordinateTransformer(args.calib) if args.calib else None
+    transformer = CoordinateTransformer(args.calib, allow_identity=True) if args.calib else None
 
     frame = read_source(args.source)
     h, w = frame.shape[:2]

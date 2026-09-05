@@ -1,8 +1,16 @@
+# Auto Sort Pi — toàn bộ tham số vận hành. Không hard-code các giá trị này
+# trong Python (§20 task.md): drop position, workspace, retry, timeout,
+# threshold, FPS, model path đều phải đọc từ đây. main.py validate file này
+# khi khởi động (SELF_CHECK) — cấu hình sai thì hệ thống không được vào READY.
+
 camera:
   source: 0
   width: 1920
   height: 1080
   fps: 15
+  max_frame_age_seconds: 0.5       # frame cũ hơn giá trị này bị bỏ, không đưa vào inference
+  max_reconnect_attempts: 5
+  reconnect_backoff_seconds: 1.0
 
 inference:
   model_path: models/yolov8n_waste_int8.tflite
@@ -10,6 +18,44 @@ inference:
   input_height: 320
   confidence_threshold: 0.50
   nms_iou_threshold: 0.45
+  max_consecutive_errors: 10        # vượt ngưỡng này -> coi model hỏng, chuyển SAFE_STOP
+
+calibration:
+  file: config/calibration_matrix.json
+  max_reprojection_error_mm: 3.0     # đúng tiêu chí nghiệm thu "sai số <= ±3.0mm"
+
+workspace:
+  x_min_mm: 0.0
+  x_max_mm: 500.0
+  y_min_mm: 0.0
+  y_max_mm: 500.0
+  min_confidence: 0.50
+  max_target_age_seconds: 5.0
+
+scheduler:
+  fragile_group_id: 4
+  start_position_mm: [0.0, 0.0]
+  drop_positions_mm:
+    1: [100.0, 0.0]
+    2: [200.0, 0.0]
+    3: [300.0, 0.0]
+    4: [400.0, 0.0]
+  max_workspace_mm: [0.0, 500.0, 0.0, 500.0]
+  batch_size: null                  # null = xử lý toàn bộ target detect được trong 1 chu kỳ
+
+robot:
+  safety:
+    x_min_mm: 0.0
+    x_max_mm: 500.0
+    y_min_mm: 0.0
+    y_max_mm: 500.0
+    min_angle_deg: -180.0
+    max_angle_deg: 180.0
+
+dedup:
+  suppression_radius_mm: 30.0
+  cooldown_seconds: 5.0
+  disappearance_confirm_scans: 2
 
 uart:
   port: /dev/ttyAMA0
@@ -18,10 +64,17 @@ uart:
   ack_timeout: 2.0
   action_timeout: 15.0
   max_retries: 3
-
-scheduler:
-  fragile_group_id: 4
-  start_position_mm: [0.0, 0.0]
+  max_reconnect_attempts: 3
+  reconnect_backoff_seconds: 1.0
 
 runtime:
   loop_delay_seconds: 0.1
+  waiting_poll_seconds: 0.05         # nhịp poll của WAITING_ACK / WAITING_DONE
+  error_backoff_seconds: 1.0
+  max_consecutive_cycle_errors: 10   # vượt ngưỡng -> SAFE_STOP
+
+logging:
+  level: INFO
+  # logs/requests/ ghi một file JSON riêng mỗi chu kỳ (§19) — "rotation" ở đây
+  # nghĩa là dọn các file cũ hơn retention_days để tránh đầy đĩa trên Pi.
+  retention_days: 14
