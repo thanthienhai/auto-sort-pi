@@ -1,0 +1,61 @@
+name: roboflow_waste_detection_suthida
+source: roboflow
+url: https://universe.roboflow.com/
+source_type: roboflow
+license: CC BY 4.0
+author: suthida
+version: ""
+download_date: null
+task: object_detection
+image_count: 950
+annotation_format: yolo
+original_classes:
+  - paper
+  - cardboard
+  - plastic bottle
+  - plastic bag
+  - glass bottle
+  - pet bottle
+  - plastic container
+  - uht carton
+target_mapping:
+  "paper":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.3
+    candidate_targets: [cardboard, newspaper, paper_box, paper_cup, tetra_pak]
+  "cardboard":
+    target_class: cardboard
+    mapping_type: EXACT
+    confidence: 1.0
+  "plastic bottle":
+    target_class: pet_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.85
+  "plastic bag":
+    target_class: nylon_bag
+    mapping_type: SAFE_ALIAS
+    confidence: 0.9
+  "glass bottle":
+    target_class: glass_bottle
+    mapping_type: EXACT
+    confidence: 1.0
+  "pet bottle":
+    target_class: pet_bottle
+    mapping_type: EXACT
+    confidence: 1.0
+  "plastic container":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets: [detergent_bottle, plastic_cup]
+  "uht carton":
+    target_class: tetra_pak
+    mapping_type: SAFE_ALIAS
+    confidence: 0.85
+notes: >
+  CHƯA TẢI VỀ (§8). PHASE 2 (bổ sung dataset chuyên biệt, §39). License CC BY 4.0.
+quality_score: null
+source_weight: medium
+domain: unknown
+status: not_downloaded

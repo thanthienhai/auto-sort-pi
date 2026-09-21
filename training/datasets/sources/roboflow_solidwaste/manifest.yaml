@@ -1,0 +1,101 @@
+name: roboflow_solidwaste
+source: roboflow
+url: https://universe.roboflow.com/solidwaste-dc21q/solidwaste-cbyxk
+source_type: roboflow
+license: CC BY 4.0
+author: solidwaste-dc21q
+version: ''
+download_date: "2026-09-05"
+task: object_detection
+image_count: 1625
+annotation_format: yolo
+original_classes:
+- aluminium can
+- cardboard
+- cigarette
+- domestic waste
+- electronics
+- foil
+- food waste organics
+- glass bottle jar
+- medical glove mask
+- paper loose
+- paper packaging
+- paper single use
+- pet waste
+- plastic packaging
+- plastic single use
+- plastic soft flexible
+- single use cup
+- styrofoam
+- tetrapak
+- textile
+target_mapping:
+  cardboard:
+    target_class: cardboard
+    mapping_type: EXACT
+    confidence: 1.0
+  foil:
+    target_class: aluminum_foil
+    mapping_type: SAFE_ALIAS
+    confidence: 0.7
+  glass bottle jar:
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets:
+    - glass_bottle
+    - glass_jar
+  paper loose:
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets:
+    - newspaper
+    - paper_box
+  paper packaging:
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets:
+    - paper_box
+    - tetra_pak
+    - cardboard
+  single use cup:
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets:
+    - paper_cup
+    - plastic_cup
+  tetrapak:
+    target_class: tetra_pak
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+  plastic soft flexible:
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.35
+    candidate_targets:
+    - nylon_bag
+  aluminium can:
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.5
+    candidate_targets:
+    - can
+    - tin_can
+notes: >
+  Tải qua Roboflow API ngày 2026-09-05, version 28 (1625 ảnh). PHASE 1
+  priority (§39). License CC BY 4.0. Dataset "solid waste" tổng quát hơn
+  taxonomy của mình (nhiều class ngoài phạm vi: cigarette, domestic waste,
+  electronics, food waste organics, medical glove mask, pet waste, textile,
+  plastic/paper single use/packaging — mặc định rơi vào REVIEW_REQUIRED qua
+  bảng global vì không có target_class rõ ràng). Mapping breakdown khi import:
+  EXACT=47, SAFE_ALIAS=171, REVIEW_REQUIRED=1833 instance — tỷ lệ hữu ích thấp
+  hơn nhiều so với roboflow_yolov7_trash_v7 nhưng vẫn đóng góp thêm ảnh cho
+  cardboard/aluminum_foil/tetra_pak.
+quality_score: null
+source_weight: medium
+domain: unknown
+status: imported

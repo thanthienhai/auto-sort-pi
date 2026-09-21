@@ -1,0 +1,34 @@
+# Phần bổ sung cho taxonomy — KHÔNG duplicate danh sách 16 class hay class->group
+# id ở đây. Nguồn sự thật vẫn là config/model_classes.json + config/class_mapping.json
+# (xem training/lib/taxonomy.py:load_taxonomy). File này chỉ chứa phần cấu hình
+# không tồn tại trong runtime config: tên nhóm, ngưỡng coverage, "hard class" priority.
+
+group_names:
+  1: METAL
+  2: PAPER
+  3: PLASTIC
+  4: GLASS
+
+# Ngưỡng phân loại coverage theo số instance/class (§13 training_online_dataset.md).
+# instance_count == 0            -> MISSING
+# 0 < instance_count < missing_max -> VERY_LOW
+# missing_max <= .. < low_max     -> LOW
+# low_max <= .. < moderate_max    -> MODERATE
+# >= moderate_max                 -> GOOD
+coverage_thresholds:
+  missing_max: 100
+  low_max: 300
+  moderate_max: 1000
+
+# Class khó (§14) — ưu tiên khi đánh giá dataset, không chỉ nhìn tổng số ảnh.
+hard_classes:
+  - aluminum_foil
+  - metal_cap
+  - paper_cup
+  - tetra_pak
+  - paper_box
+  - newspaper
+  - detergent_bottle
+  - nylon_bag
+  - glass_jar
+  - broken_glass

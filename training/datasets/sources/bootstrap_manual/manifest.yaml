@@ -1,0 +1,57 @@
+name: bootstrap_manual
+source: local
+url: ''
+source_type: generic_json
+license: internal
+author: auto-sort-pi
+version: '0.1'
+download_date: '2026-09-05'
+task: object_detection
+image_count: 2
+annotation_format: generic_json
+original_classes:
+- giay_cardboard_box
+- kim_loai_can
+- nhua_pet_bottle
+- thuytinh_glass_bottle
+target_mapping:
+  nhua_pet_bottle:
+    target_class: pet_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.9
+    note: Chai nhựa PET
+  thuytinh_glass_bottle:
+    target_class: glass_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.9
+    note: Chai thủy tinh
+  kim_loai_can:
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.5
+    candidate_targets:
+    - can
+    - tin_can
+    note: Lon kim loại, chưa rõ nhôm hay thiếc
+  giay_cardboard_box:
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets:
+    - cardboard
+    - paper_box
+    note: Hộp giấy carton, chưa rõ cardboard (bìa cứng) hay paper_box (hộp giấy)
+notes: "Bootstrap dataset nội bộ (KHÔNG phải public dataset), dùng để smoke-test toàn\
+  \ bộ pipeline import -> mapping -> review -> normalize -> validate -> dedup -> split\
+  \ -> build -> train trên máy dev khi chưa tải được public dataset thật (Roboflow\
+  \ yêu cầu đăng nhập/API key, §8). Gồm: - samples/waste_composite_topdown.jpg + ground\
+  \ truth có sẵn trong repo\n  (4 object: pet_bottle, glass_bottle được accept; can,\
+  \ cardboard_box bị\n  đưa vào review vì mơ hồ theo đúng §4).\n- 1 ảnh negative (samples/zidane.jpg,\
+  \ không có object thuộc taxonomy). Dataset v0.1-public-baseline build từ nguồn này\
+  \ CHỈ để verify pipeline + chạy thử training trên GPU — KHÔNG đủ dữ liệu để dùng\
+  \ làm baseline thật. Baseline thật cần PHASE 1 public dataset (§39) sau khi export\
+  \ thủ công.\n"
+quality_score: 0.5
+source_weight: low
+domain: studio
+status: imported

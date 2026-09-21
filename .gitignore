@@ -230,3 +230,22 @@ logs/
 # onnx2tf / dev conversion output
 *_tf/
 *_tensor_correspondence_report.json
+
+# training/ dataset pipeline: không commit ảnh/annotation nhị phân, chỉ giữ
+# lại code + config + manifest (yaml) dưới training/datasets/sources/.
+training/datasets/raw/*
+training/datasets/normalized/*
+training/datasets/review/*
+training/datasets/final/*
+training/datasets/versions/*
+training/datasets/representative/*
+!training/datasets/*/.gitkeep
+training/runs/
+training/datasets/auto_label_output/
+
+# ...nhưng training/lib/ là code (module) chứ không phải build artifact —
+# generic rule "lib/" ở trên (§Distribution/packaging) khớp nhầm mọi thư mục
+# tên "lib" ở bất kỳ độ sâu nào, nên phải un-ignore tường minh ở đây (chỉ code,
+# không un-ignore __pycache__/*.pyc bên trong).
+!training/lib/
+!training/lib/*.py

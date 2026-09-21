@@ -1,0 +1,339 @@
+# Bảng mapping global: source label (từ bất kỳ public dataset nào) -> taxonomy
+# class của auto-sort-pi. Đây là "nguồn sự thật" cho việc merge nhãn (§4, §5
+# training_online_dataset.md).
+#
+# Key được so khớp sau khi chuẩn hóa (lowercase, "-"/"_"/"/" và khoảng trắng
+# thừa đều gộp thành 1 space) — xem training/lib/mapping.py:normalize_label.
+#
+# QUY TẮC: một rule ở đây được ưu tiên HƠN auto-exact-match. Điều này bắt buộc
+# để xử lý các trường hợp nguy hiểm như "Tin Can": dù trùng gần tên class
+# `tin_can`, nó vẫn phải là REVIEW_REQUIRED vì nhãn gốc không đủ chắc chắn đó
+# là lon thiếc chứ không phải lon nhôm/lon nói chung.
+#
+# mapping_type: EXACT | SAFE_ALIAS | REVIEW_REQUIRED
+# REVIEW_REQUIRED thì target_class phải là null, dùng candidate_targets để gợi ý.
+
+labels:
+
+  # ---- SAFE_ALIAS ví dụ trong §4 ----
+  "Pet Bottle":
+    target_class: pet_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+    note: "Tên khác của pet_bottle"
+  "PET Bottle":
+    target_class: pet_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+    note: "Tên khác của pet_bottle"
+  "PET_Bottle":
+    target_class: pet_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+    note: "Tên khác của pet_bottle"
+  "Plastic Bottle":
+    target_class: pet_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.85
+    note: "Assume standard PET bottle (giả định phổ biến nhất trong domain waste sorting)"
+  "Clear Plastic Bottle":
+    target_class: pet_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.9
+    note: "Chai nhựa trong suốt -> PET bottle"
+
+  "Tetra Pack":
+    target_class: tetra_pak
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+  "Tetra Pak":
+    target_class: tetra_pak
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+  "Tetra-Pak":
+    target_class: tetra_pak
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+  "TetraPak":
+    target_class: tetra_pak
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+  "Drink Carton":
+    target_class: tetra_pak
+    mapping_type: SAFE_ALIAS
+    confidence: 0.8
+    note: "Hộp giấy đựng đồ uống, thường là tetra pak"
+  "UHT Carton":
+    target_class: tetra_pak
+    mapping_type: SAFE_ALIAS
+    confidence: 0.85
+
+  "Glass Bottle":
+    target_class: glass_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+  "Colored Glass Bottles":
+    target_class: glass_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.85
+
+  "Glass Jar":
+    target_class: glass_jar
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+
+  "Plastic Cup":
+    target_class: plastic_cup
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+  "Disposable Plastic Cup":
+    target_class: plastic_cup
+    mapping_type: SAFE_ALIAS
+    confidence: 0.9
+
+  "Paper Cup":
+    target_class: paper_cup
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+
+  "Plastic Bag":
+    target_class: nylon_bag
+    mapping_type: SAFE_ALIAS
+    confidence: 0.9
+    note: "Taxonomy dùng tên nylon_bag cho túi nilon/plastic bag"
+
+  "Metal Cap":
+    target_class: metal_cap
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+
+  "Aluminium Foil":
+    target_class: aluminum_foil
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+    note: "Chính tả Anh-Anh của aluminum_foil"
+  "Aluminium foil":
+    target_class: aluminum_foil
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+  "Foil":
+    target_class: aluminum_foil
+    mapping_type: SAFE_ALIAS
+    confidence: 0.7
+    note: "Không có ngữ cảnh khác, giả định giấy bạc nhôm trong domain waste sorting"
+
+  "Corrugated Carton":
+    target_class: cardboard
+    mapping_type: SAFE_ALIAS
+    confidence: 0.85
+    note: "Carton gợn sóng -> cardboard"
+
+  "Wash Supplies Bottle":
+    target_class: detergent_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.75
+    note: "Chai đựng chất tẩy rửa -> detergent_bottle"
+
+  "Glass Broken":
+    target_class: broken_glass
+    mapping_type: SAFE_ALIAS
+    confidence: 0.9
+
+  # ---- REVIEW_REQUIRED bắt buộc theo §4 (nhóm "can") ----
+  "Can":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.5
+    candidate_targets: [can, tin_can]
+    note: "May represent aluminum or tin"
+  "Cans":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.5
+    candidate_targets: [can, tin_can]
+  "Metal Can":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.5
+    candidate_targets: [can, tin_can]
+  "Drink Can":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.5
+    candidate_targets: [can, tin_can]
+  "Food Can":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.5
+    candidate_targets: [can, tin_can]
+  "Aluminium Can":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.5
+    candidate_targets: [can, tin_can]
+    note: "Có thể là lon nhôm (can) nhưng không loại trừ lon thiếc"
+  "Aluminum Can":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.5
+    candidate_targets: [can, tin_can]
+  "Tin Can":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.5
+    candidate_targets: [can, tin_can]
+    note: "KHÔNG auto-map dù trùng gần tên class tin_can — theo yêu cầu §4"
+
+  # ---- REVIEW_REQUIRED bắt buộc theo §4 (nhóm "glass") ----
+  "Glass":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.3
+    candidate_targets: [glass_bottle, glass_jar, broken_glass]
+    note: "Quá chung chung, phải tách rõ bottle/jar/broken"
+  "Glass/Glass bottle":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets: [glass_bottle, glass_jar]
+  "Glass Bottle Jar":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets: [glass_bottle, glass_jar]
+
+  # ---- REVIEW_REQUIRED bắt buộc theo §4 (nhóm "paper") ----
+  "Paper":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.3
+    candidate_targets: [cardboard, newspaper, paper_box, paper_cup, tetra_pak]
+    note: "Quá chung chung"
+  "Paperboard":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets: [cardboard, paper_box]
+  "Paper Packaging":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets: [paper_box, tetra_pak, cardboard]
+  "Paper Loose":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets: [newspaper, paper_box]
+  "Single Use Cup":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets: [paper_cup, plastic_cup]
+    note: "Không rõ chất liệu cốc dùng 1 lần"
+
+  # ---- REVIEW_REQUIRED khác (dataset D/E/F/G) ----
+  "Plastic Wrapper":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.35
+    candidate_targets: [nylon_bag]
+    note: "Có thể là màng bọc (không phải túi) — cần xem ảnh"
+  "Plastic Soft Flexible":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.35
+    candidate_targets: [nylon_bag]
+  "Beverage Bottle":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets: [pet_bottle, glass_bottle]
+    note: "Không rõ chất liệu (nhựa hay thủy tinh)"
+  "Express Package":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.35
+    candidate_targets: [cardboard, paper_box]
+  "Tableware Box":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.35
+    candidate_targets: [paper_box, cardboard]
+  "Plastic Container":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets: [detergent_bottle, plastic_cup]
+
+  # ---- REVIEW_REQUIRED: tên nhóm chung chung (dataset D — General waste data) ----
+  "PAPER":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.2
+    candidate_targets: [cardboard, paper_cup, tetra_pak, paper_box, newspaper]
+    note: "Tên nhóm sorting, không phải class cụ thể"
+  "PLASTIC":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.2
+    candidate_targets: [pet_bottle, plastic_cup, detergent_bottle, nylon_bag]
+  "GLASS":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.2
+    candidate_targets: [glass_bottle, glass_jar, broken_glass]
+  "METAL":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.2
+    candidate_targets: [can, tin_can, aluminum_foil, metal_cap]
+
+  # ---- Phát hiện thêm khi import roboflow_yolov7_trash_v7 v2 thật (2026-09-05) ----
+  # Label không có dấu phân cách (camelCase) -> normalize_label không tách được
+  # thành nhiều từ, phải khai báo tường minh theo đúng chuỗi gốc.
+  "PlasticCups":
+    target_class: plastic_cup
+    mapping_type: SAFE_ALIAS
+    confidence: 0.9
+    note: "camelCase variant của 'Plastic Cup'"
+  "PaperBag":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.3
+    candidate_targets: [cardboard, paper_box]
+    note: "Túi giấy — không khớp trực tiếp class nào (không phải hộp/tấm bìa)"
+  "Paper Bag":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.3
+    candidate_targets: [cardboard, paper_box]
+  "Styrofoam":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.2
+    candidate_targets: []
+    note: "Xốp styrofoam — ngoài phạm vi 16 class hiện tại"
+  "Face Mask":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.0
+    candidate_targets: []
+    note: "Khẩu trang — ngoài phạm vi taxonomy (không phải rác tái chế mục tiêu)"
+  "Peel":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.0
+    candidate_targets: []
+    note: "Vỏ trái cây/rác hữu cơ — ngoài phạm vi taxonomy"
+  "Rags":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.0
+    candidate_targets: []
+    note: "Vải vụn — ngoài phạm vi taxonomy"
+  "Pile of Leaves":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.0
+    candidate_targets: []
+    note: "Lá cây/rác hữu cơ — ngoài phạm vi taxonomy"

@@ -1,0 +1,71 @@
+name: roboflow_trash_detection
+source: roboflow
+url: https://universe.roboflow.com/search?q=class%3Aaluminium-foil
+source_type: roboflow
+license: unknown            # xem license trên trang dataset cụ thể trước khi dùng
+author: ""
+version: ""
+download_date: null
+task: object_detection
+image_count: null
+annotation_format: yolo     # Roboflow export mặc định hỗ trợ YOLOv8 format
+original_classes:
+  - Aluminium foil
+  - Broken glass
+  - Clear plastic bottle
+  - Corrugated carton
+  - Disposable plastic cup
+  - Drink can
+  - Drink carton
+  - Food Can
+  - Glass/Glass bottle
+target_mapping:
+  "Aluminium foil":
+    target_class: aluminum_foil
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+  "Broken glass":
+    target_class: broken_glass
+    mapping_type: EXACT
+    confidence: 1.0
+  "Clear plastic bottle":
+    target_class: pet_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.9
+  "Corrugated carton":
+    target_class: cardboard
+    mapping_type: SAFE_ALIAS
+    confidence: 0.85
+  "Disposable plastic cup":
+    target_class: plastic_cup
+    mapping_type: SAFE_ALIAS
+    confidence: 0.9
+  "Drink can":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.5
+    candidate_targets: [can, tin_can]
+    note: "May represent aluminum or tin"
+  "Drink carton":
+    target_class: tetra_pak
+    mapping_type: SAFE_ALIAS
+    confidence: 0.8
+  "Food Can":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.5
+    candidate_targets: [can, tin_can]
+  "Glass/Glass bottle":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets: [glass_bottle, glass_jar]
+notes: >
+  CHƯA TẢI VỀ. Roboflow universe yêu cầu đăng nhập/API key để export dataset
+  (§8 training_online_dataset.md) — pipeline không tự động tải. Người dùng cần
+  export thủ công (ZIP, format YOLOv8) từ trang dataset rồi chạy:
+  python -m training.cli import --source <zip> --name roboflow_trash_detection
+quality_score: null
+source_weight: medium
+domain: unknown
+status: not_downloaded

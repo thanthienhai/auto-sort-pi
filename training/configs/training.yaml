@@ -1,0 +1,18 @@
+# Baseline training config (§27). Mọi hyperparameter phải đọc từ đây, không
+# hard-code trong training/cli.py (subcommand `train`).
+
+model: yolov8n.pt          # hoặc yolo11n.pt
+data: training/datasets/versions/v0.1-public-baseline/data.yaml
+imgsz: 320
+epochs: 100
+batch: -1                  # -1 = ultralytics tự chọn batch theo VRAM (AutoBatch)
+device: 0                  # GPU index, "cpu" nếu không có GPU
+workers: 8
+seed: 42
+project: training/runs
+name: baseline
+
+# Ngưỡng auto-labeling (§32) — dùng bởi training/cli.py (subcommand `auto-label`)
+auto_label:
+  accept_threshold: 0.90
+  review_threshold: 0.50

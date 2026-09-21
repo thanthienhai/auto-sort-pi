@@ -1,0 +1,119 @@
+name: roboflow_yolov7_trash_v7
+source: roboflow
+url: https://universe.roboflow.com/yolov7-trash-detection-group/yolov7-trash-dataset-v7-05-06-2023
+source_type: roboflow
+license: CC BY 4.0
+author: yolov7-trash-detection-group
+version: v7-05-06-2023
+download_date: "2026-09-05"
+task: object_detection
+image_count: 3321
+annotation_format: yolo
+original_classes:
+- Cans
+- Cardboard
+- Colored Glass Bottles
+- Colored-Glass-Bottles
+- Face Mask
+- Face-Mask
+- Glass Bottle
+- Paper Bag
+- Paper Cup
+- Paper-Cup
+- PaperBag
+- Paperboard
+- Peel
+- Pile of Leaves
+- Plastic Bag
+- Plastic Bottle
+- Plastic Cup
+- Plastic Wrapper
+- Plastic-Bag
+- Plastic-Bottle
+- Plastic-Wrapper
+- PlasticCups
+- Rags
+- Styrofoam
+- Tetra Pack
+- Tetra Pak
+- Tetra-Pak
+- TetraPak
+target_mapping:
+  Cardboard:
+    target_class: cardboard
+    mapping_type: EXACT
+    confidence: 1.0
+  Plastic Bottle:
+    target_class: pet_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.85
+  Plastic Bag:
+    target_class: nylon_bag
+    mapping_type: SAFE_ALIAS
+    confidence: 0.9
+  Glass Bottle:
+    target_class: glass_bottle
+    mapping_type: EXACT
+    confidence: 1.0
+  Paper Cup:
+    target_class: paper_cup
+    mapping_type: EXACT
+    confidence: 1.0
+  Plastic Cup:
+    target_class: plastic_cup
+    mapping_type: EXACT
+    confidence: 1.0
+  Paperboard:
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.4
+    candidate_targets:
+    - cardboard
+    - paper_box
+  Plastic Wrapper:
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.35
+    candidate_targets:
+    - nylon_bag
+  Cans:
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.5
+    candidate_targets:
+    - can
+    - tin_can
+  Tetra Pack:
+    target_class: tetra_pak
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+  Tetra Pak:
+    target_class: tetra_pak
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+  Tetra-Pak:
+    target_class: tetra_pak
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+  TetraPak:
+    target_class: tetra_pak
+    mapping_type: SAFE_ALIAS
+    confidence: 0.95
+  Colored Glass Bottles:
+    target_class: glass_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.85
+notes: >
+  Tải qua Roboflow API (ROBOFLOW_API_KEY, training/scripts/download_roboflow.py)
+  ngày 2026-09-05, version 2 (3322 ảnh gốc, 3321 ảnh import thành công). PHASE 1
+  priority (§39). License CC BY 4.0 — cần giữ attribution khi publish
+  model/dataset derivative. 28 class gốc thực tế (bao gồm biến thể chính tả/
+  camelCase như "PlasticCups", "TetraPak" và các class ngoài taxonomy như
+  "Face Mask", "Styrofoam", "Peel", "Rags", "Pile of Leaves" — các class này
+  map qua bảng global training/configs/dataset_mapping.yaml, không lặp lại ở
+  đây). Mapping breakdown khi import: EXACT=1996, SAFE_ALIAS=3475,
+  REVIEW_REQUIRED=7259 instance.
+quality_score: null
+source_weight: medium
+domain: unknown
+status: imported

@@ -1,0 +1,19 @@
+# Danh sách dataset (đã import + normalize) được gộp vào khi build_dataset.py
+# chạy. Đây KHÔNG phải nơi khai báo lại class mapping (xem dataset_mapping.yaml
+# và manifest.yaml riêng của từng dataset trong training/datasets/sources/).
+#
+# Thêm dataset mới: chạy `import_dataset.py --name <name>` trước, sau đó thêm
+# tên vào danh sách dưới đây rồi chạy build_dataset.py.
+
+datasets:
+  - bootstrap_manual
+  - roboflow_yolov7_trash_v7
+  - roboflow_solidwaste
+
+# split mặc định khi build (có thể override bằng --seed/--ratios trên CLI)
+split:
+  seed: 42
+  ratios:
+    train: 0.7
+    val: 0.2
+    test: 0.1

@@ -1,0 +1,26 @@
+# Dependencies cho training/ dataset pipeline + baseline training (dev machine
+# only — KHÔNG cài trên Raspberry Pi vận hành, xem requirements.txt cho runtime).
+#
+# PyYAML, numpy, Pillow, opencv-python-headless đã có trong requirements.txt.
+
+imagehash          # perceptual hash cho near-duplicate detection (§15)
+
+# GPU training (§27). Cài torch/torchvision theo đúng CUDA driver của máy —
+# vd với GTX 1060 (Pascal, compute capability 6.1) + driver CUDA 12.8, build
+# cu128 mới nhất của PyTorch KHÔNG còn kernel cho sm_61 -> phải dùng build
+# cu118 (driver NVIDIA backward-compatible với runtime CUDA cũ hơn):
+#
+#   pip install --index-url https://download.pytorch.org/whl/cu118 \
+#       torch==2.7.1+cu118 torchvision==0.22.1+cu118
+#
+# Nếu không có GPU: pip install torch torchvision (CPU-only, không cần index-url).
+#
+# ultralytics kéo theo `opencv-python` (bản GUI) làm dependency — nó chiếm cùng
+# namespace `cv2` với `opencv-python-headless` đã cài cho runtime, ghi đè lẫn
+# nhau (uninstall 1 bên có thể xóa luôn cv2 dùng chung). Luôn cài bằng:
+#   pip install ultralytics --no-deps
+#   pip install ultralytics   # rồi kiểm tra `pip list` không có opencv-python
+# và nếu opencv-python lọt vào, gỡ + cài lại headless:
+#   pip uninstall -y opencv-python
+#   pip install --force-reinstall --no-deps opencv-python-headless
+ultralytics

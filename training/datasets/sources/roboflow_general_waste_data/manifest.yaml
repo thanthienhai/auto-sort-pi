@@ -1,0 +1,90 @@
+name: roboflow_general_waste_data
+source: roboflow
+url: https://universe.roboflow.com/mcl2/general-waste-data
+source_type: roboflow
+license: unknown
+author: mcl2
+version: ""
+download_date: null
+task: object_detection
+image_count: null
+annotation_format: yolo
+original_classes:
+  - PAPER
+  - PLASTIC
+  - GLASS
+  - METAL
+  - CARDBOARD
+  - PLASTIC bottle
+  - PLASTIC bag
+  - GLASS bottle
+  - PAPER cup
+  - GLASS jar
+  - PLASTIC cup
+  - METAL cap
+  - GLASS broken
+target_mapping:
+  "PAPER":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.2
+    candidate_targets: [cardboard, paper_cup, tetra_pak, paper_box, newspaper]
+  "PLASTIC":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.2
+    candidate_targets: [pet_bottle, plastic_cup, detergent_bottle, nylon_bag]
+  "GLASS":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.2
+    candidate_targets: [glass_bottle, glass_jar, broken_glass]
+  "METAL":
+    target_class: null
+    mapping_type: REVIEW_REQUIRED
+    confidence: 0.2
+    candidate_targets: [can, tin_can, aluminum_foil, metal_cap]
+  "CARDBOARD":
+    target_class: cardboard
+    mapping_type: EXACT
+    confidence: 1.0
+  "PLASTIC bottle":
+    target_class: pet_bottle
+    mapping_type: SAFE_ALIAS
+    confidence: 0.85
+  "PLASTIC bag":
+    target_class: nylon_bag
+    mapping_type: SAFE_ALIAS
+    confidence: 0.9
+  "GLASS bottle":
+    target_class: glass_bottle
+    mapping_type: EXACT
+    confidence: 1.0
+  "PAPER cup":
+    target_class: paper_cup
+    mapping_type: EXACT
+    confidence: 1.0
+  "GLASS jar":
+    target_class: glass_jar
+    mapping_type: EXACT
+    confidence: 1.0
+  "PLASTIC cup":
+    target_class: plastic_cup
+    mapping_type: EXACT
+    confidence: 1.0
+  "METAL cap":
+    target_class: metal_cap
+    mapping_type: EXACT
+    confidence: 1.0
+  "GLASS broken":
+    target_class: broken_glass
+    mapping_type: SAFE_ALIAS
+    confidence: 0.9
+notes: >
+  CHƯA TẢI VỀ (§8). PHASE 1 priority (§39). Dataset có cả label theo nhóm
+  chung (PAPER/PLASTIC/GLASS/METAL) lẫn label cụ thể — các label nhóm chung
+  bị REVIEW_REQUIRED vì không đủ chi tiết để map an toàn vào 1 trong 16 class.
+quality_score: null
+source_weight: medium
+domain: unknown
+status: not_downloaded
